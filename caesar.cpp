@@ -4,13 +4,14 @@
 #include <stdbool.h>
 
 int mod(int a, int b);
-void charOps(FILE* output, char word[50], int keyparam, bool dynamic);
-void crypt(FILE* input, FILE* output, int keyparam, bool dynamic);
+void charOps(FILE* output, char word[50], int keyparam, bool dynamic, bool decrypt);
+void crypt(FILE* input, FILE* output, int keyparam, bool dynamic, bool decrypt);
 
 int main()
 {
-    int op, key = 0;
+    int op, key;
     bool dynamic = false;
+    bool decrypt = false;
 
     FILE* input = fopen("input.txt", "r");
     FILE* output = fopen("output.txt", "w");
@@ -18,11 +19,11 @@ int main()
     if (input)
     {
         printf("Choose the operation number:\n");
-        printf("(1) Decrypt - static key;\n");
-        printf("(2) Decrypt - dynamic key;\n");
-        printf("(3) Encrypt - static key;\n");
-        printf("(4) Encrypt - dynamic key;\n");
-        printf("(0) Exit.\n");
+        printf("[1] Decrypt - static key;\n");
+        printf("[2] Decrypt - dynamic key;\n");
+        printf("[3] Encrypt - static key;\n");
+        printf("[4] Encrypt - dynamic key;\n");
+        printf("[0] Exit.\n");
         printf(">> ");
         scanf("%d", &op);
 
@@ -31,30 +32,26 @@ int main()
             case 1:
                 printf("Enter the key: ");
                 scanf("%d", &key);
-                crypt(input, output, key, dynamic);
+                decrypt = true;
+                crypt(input, output, key, dynamic, decrypt);
                 printf("File decrypted.\n");
-                key = 0;
                 break;
             case 2:
                 dynamic = true;
-                crypt(input, output, key, dynamic);
+                decrypt = true;
+                crypt(input, output, key, dynamic, decrypt);
                 printf("File decrypted.\n");
-                dynamic = false;
                 break;
             case 3:
                 printf("Enter the key: ");
                 scanf("%d", &key);
-                crypt(input, output, key, dynamic);
+                crypt(input, output, key, dynamic, decrypt);
                 printf("File encrypted.\n");
-                key = 0;
                 break;
             case 4:
-                key = -1;
                 dynamic = true;
-                crypt(input, output, key, dynamic);
+                crypt(input, output, key, dynamic, decrypt);
                 printf("File encrypted.\n");
-                dynamic = false;
-                key = 0;
                 break;
             case 0:
                 printf("Program closed.\n");
@@ -80,7 +77,7 @@ int mod(int a, int b)
     return r < 0 ? r + b : r;
 }
 
-void charOps(FILE* output, char word[50], int keyparam, bool dynamic)
+void charOps(FILE* output, char word[50], int keyparam, bool dynamic, bool decrypt)
 {
     int key;
 
@@ -94,14 +91,14 @@ void charOps(FILE* output, char word[50], int keyparam, bool dynamic)
                 key--;
             }
         }
-        if (!keyparam)
-        {
-            key = key * (-1);
-        }
     }
     else
     {
         key = keyparam;
+    }
+    if (decrypt)
+    {
+        key = key * (-1);
     }
 
     for (int i = 0; i < strlen(word); i++)
@@ -134,12 +131,13 @@ void charOps(FILE* output, char word[50], int keyparam, bool dynamic)
     }
 }
 
-void crypt(FILE* input, FILE* output, int keyparam, bool dynamic)
+void crypt(FILE* input, FILE* output, int keyparam, bool dynamic, bool decrypt)
 {
     while (!feof(input))
     {
         int pos;
         bool found = false;
+        char flag;
         char word[50];
         fscanf(input, "%s", word);
 
@@ -148,6 +146,14 @@ void crypt(FILE* input, FILE* output, int keyparam, bool dynamic)
             if (word[i] == '-')
             {
                 found = true;
+                flag = '-';
+                pos = i;
+                break;
+            }
+            else if (word[i] == '/')
+            {
+                found = true;
+                flag = '/';
                 pos = i;
                 break;
             }
@@ -155,7 +161,7 @@ void crypt(FILE* input, FILE* output, int keyparam, bool dynamic)
 
         if (!found)
         {
-            charOps(output, word, keyparam, dynamic);
+            charOps(output, word, keyparam, dynamic, decrypt);
         }
         else 
         {
@@ -165,9 +171,9 @@ void crypt(FILE* input, FILE* output, int keyparam, bool dynamic)
             strncpy(aux2, word + pos + 1, strlen(word) - pos);
             aux2[strlen(word) - pos - 1] = '\0';
 
-            charOps(output, aux1, keyparam, dynamic);
-            fprintf(output, "-");
-            charOps(output, aux2, keyparam, dynamic);
+            charOps(output, aux1, keyparam, dynamic, decrypt);
+            fprintf(output, "%c", flag);
+            charOps(output, aux2, keyparam, dynamic, decrypt);
         }
 
         char c = getc(input);

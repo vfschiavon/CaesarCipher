@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <string.h>
 #include <ctype.h>
+#include <string.h>
 #include <stdbool.h>
 
 int mod(int a, int b);
@@ -124,8 +124,8 @@ void charOps(FILE* output, char word[50], int keyparam, bool dynamic, bool decry
                 word[i] = word[i] - 10;
             }
         }
-        fprintf(output, "%c", word[i]);
     }
+    fprintf(output, "%s", word);
 }
 
 void crypt(FILE* input, FILE* output, int keyparam, bool dynamic, bool decrypt)
